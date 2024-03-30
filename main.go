@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
-	"os"
 )
 
 type ViaCEP struct {
@@ -22,28 +18,21 @@ type ViaCEP struct {
 }
 
 func main() {
-	for _, cep := range os.Args[1:] {
-		req, err := http.Get("http://viacep.com.br/ws/" + cep + "/json/")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao fazer requisição: %v\n", err)
-		}
-		defer req.Body.Close()
-		res, err := io.ReadAll(req.Body)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao ler resposta: %v\n", err)
-		}
-		var data ViaCEP
-		err = json.Unmarshal(res, &data)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao deserializar JSON: %v\n", err)
-		}
-		file, err := os.Create("cidade.txt")
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Erro ao criar arquivo: %v\n", err)
-		}
-		defer file.Close()
-		_, err = file.WriteString(fmt.Sprintf("CEP: %s, Rua: %s, Bairro: %s", data.Cep, data.Logradouro, data.Bairro))
-		fmt.Println("Arquivo criado com sucesso!")
-		fmt.Println("Cidade: ", data.Localidade)
+	http.HandleFunc("/", BuscaCep)
+	http.ListenAndServe(":8080", nil)
+}
+
+func BuscaCep(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
+	cep := r.URL.Query().Get("cep")
+	if cep == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Hello, World!!!"))
 }
