@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", BuscaCepHandler)
+	http.HandleFunc("/", BuscaCep)
 	http.ListenAndServe(":8080", nil)
 }
 
-func BuscaCepHandler(w http.ResponseWriter, r *http.Request) {
+func BuscaCep(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		w.WriteHeader(http.StatusNotFound)
 		return
