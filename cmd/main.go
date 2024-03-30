@@ -1,9 +1,8 @@
 package main
 
 import (
-	"busca_cep/domain"
+	uscviacep "busca_cep/usecases"
 	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -17,32 +16,18 @@ func BuscaCepHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-	cep := r.URL.Query().Get("cep")
-	if cep == "" {
+	cepParam := r.URL.Query().Get("cep")
+	if cepParam == "" {
 		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	cep, err := uscviacep.BuscaCep(cepParam)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hello, World!!!"))
-}
-
-func BuscaCep(cep string) (address *domain.ViaCEP, err error) {
-	res, err := http.Get("https://viacep.com.br/ws/" + cep + "/json/")
-	if err != nil {
-		return
-	}
-	defer res.Body.Close()
-
-	bodyResult, err := io.ReadAll(res.Body)
-	if err != nil {
-		return
-	}
-
-	err = json.Unmarshal(bodyResult, &address)
-	if err != nil {
-		return
-	}
-
-	return
+	json.NewEncoder(w).Encode(cep)
 }
