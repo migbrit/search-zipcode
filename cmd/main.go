@@ -7,8 +7,9 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", BuscaCep)
-	http.ListenAndServe(":8080", nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", BuscaCep)
+	http.ListenAndServe(":8080", mux)
 }
 
 func BuscaCep(w http.ResponseWriter, r *http.Request) {
